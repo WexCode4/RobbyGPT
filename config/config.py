@@ -33,3 +33,26 @@ class Config:
     # Parallel Processing Configuration (Always Enabled)
     PARALLEL_EXTRACTION = True  # Always use parallel processing
     MAX_WORKERS = int(os.getenv('MAX_WORKERS', '4'))  # Reduced to prevent throttling
+    
+    # Streamlit Secrets Support
+    @staticmethod
+    def get_aws_credentials():
+        """Get AWS credentials from Streamlit secrets or environment variables"""
+        try:
+            import streamlit as st
+            # Try Streamlit secrets first
+            if hasattr(st, 'secrets') and 'AWS_ACCESS_KEY_ID' in st.secrets:
+                return {
+                    'aws_access_key_id': st.secrets['AWS_ACCESS_KEY_ID'],
+                    'aws_secret_access_key': st.secrets['AWS_SECRET_ACCESS_KEY'],
+                    'aws_region': st.secrets.get('AWS_REGION', Config.AWS_REGION)
+                }
+        except:
+            pass
+        
+        # Fallback to environment variables
+        return {
+            'aws_access_key_id': os.getenv('AWS_ACCESS_KEY_ID'),
+            'aws_secret_access_key': os.getenv('AWS_SECRET_ACCESS_KEY'),
+            'aws_region': os.getenv('AWS_REGION', Config.AWS_REGION)
+        }

@@ -139,12 +139,28 @@ class OMExtractor:
     def _initialize_bedrock_client(self):
         """Initialize AWS Bedrock client"""
         try:
-            return boto3.client(
-                service_name='bedrock-runtime',
-                region_name=self.config.AWS_REGION
-            )
+            # Get credentials from config
+            credentials = self.config.get_aws_credentials()
+            
+            if credentials['aws_access_key_id'] and credentials['aws_secret_access_key']:
+                # Use explicit credentials
+                client = boto3.client(
+                    'bedrock-runtime',
+                    region_name=credentials['aws_region'],
+                    aws_access_key_id=credentials['aws_access_key_id'],
+                    aws_secret_access_key=credentials['aws_secret_access_key']
+                )
+            else:
+                # Fallback to default AWS credentials (IAM role, etc.)
+                client = boto3.client(
+                    'bedrock-runtime',
+                    region_name=credentials['aws_region']
+                )
+            
+            print("✅ AWS Bedrock client initialized successfully")
+            return client
         except Exception as e:
-            print(f"Error initializing Bedrock client: {e}")
+            print(f"❌ Failed to initialize Bedrock client: {e}")
             return None
     
     def read_pdf(self, file_path: str) -> Optional[str]:

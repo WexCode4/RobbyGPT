@@ -30,6 +30,21 @@ def main():
     st.title("📄 RobbyGPT - OM Extractor")
     st.markdown("Upload an Offering Memorandum PDF to extract information using single-prompt approach")
     
+    # Check AWS credentials status
+    with st.sidebar:
+        st.header("🔐 AWS Status")
+        try:
+            from config.config import Config
+            credentials = Config.get_aws_credentials()
+            if credentials['aws_access_key_id'] and credentials['aws_secret_access_key']:
+                st.success("✅ AWS Credentials Loaded")
+                st.caption("Using Streamlit Secrets")
+            else:
+                st.warning("⚠️ Using Default AWS Credentials")
+                st.caption("IAM Role or Environment Variables")
+        except Exception as e:
+            st.error(f"❌ Credential Error: {e}")
+    
     # Initialize OMExtractor
     if 'extractor' not in st.session_state:
         st.session_state.extractor = OMExtractorSinglePrompt()
